@@ -1,0 +1,1 @@
+1. copy minetest.ini to the same directory of the generated .exe file (e.g., ../Release)
