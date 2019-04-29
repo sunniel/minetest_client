@@ -94,6 +94,7 @@ public:
     ~Client();
     void connect(Address address);
     void exit();
+    void collapse();
 
     /*
      Stuff that references the environment is valid only as

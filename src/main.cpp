@@ -199,11 +199,14 @@ public:
                 if (!isPaused) {
                     isPaused = true;
                 } else {
-                    isExit = true;
+                    toExit = true;
                 }
             }
             if ((event.KeyInput.Key == KEY_KEY_Q && isPaused)) {
                 isPaused = false;
+            }
+            if ((event.KeyInput.Key == KEY_KEY_X && isPaused)) {
+                toCollapse = true;
             }
         }
 
@@ -237,7 +240,8 @@ public:
         ctrl = false;
         walking = false;
         isPaused = false;
-        isExit = false;
+        toExit = false;
+        toCollapse = false;
     }
 
     bool leftclicked;
@@ -246,7 +250,8 @@ public:
     bool ctrl;
     bool walking;
     bool isPaused;
-    bool isExit;
+    bool toExit;
+    bool toCollapse;
 private:
     // We use this array to store the current state of each key
     bool keyIsDown[KEY_KEY_CODES_COUNT];
@@ -616,8 +621,13 @@ int main() {
         while (device->run()) {
 
             // client exit check
-            if (receiver.isExit) {
+            if (receiver.toExit) {
                 client.exit();
+                // wait 10 seconds
+//                sleep_ms(5000);
+                break;
+            } else if (receiver.toCollapsed) {
+                client.collapse();
                 // wait 10 seconds
 //                sleep_ms(5000);
                 break;

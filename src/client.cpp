@@ -91,31 +91,17 @@ void Client::connect(Address address) {
 void Client::exit() {
     JMutexAutoLock envlock(m_env_mutex);
 
-    Player *myplayer = m_env.getLocalPlayer();
-    if (myplayer == NULL)
-        return;
-
-    u16 our_peer_id;
-    {
-        JMutexAutoLock lock(m_con_mutex);
-        our_peer_id = m_con.GetPeerID();
-    }
-
-    // Set peer id if not set already
-    if (myplayer->peer_id == PEER_ID_NEW)
-        myplayer->peer_id = our_peer_id;
-    // Check that an existing peer_id is the same as the connection's
-    assert(myplayer->peer_id == our_peer_id);
-
-    // fetch position
-    v3f pf = myplayer->getPosition();
-    v3s32 position(pf.X * 100, pf.Y * 100, pf.Z * 100);
-    // fetch state
-    u16 skin = myplayer->skin;
-    u16 gear = myplayer->gear;
-
     SharedBuffer<u8> data(2);
     writeU16(&data[0], TOSERVER_EXIT);
+    // Send as unreliable
+    Send(0, data, false);
+}
+
+void Client::collapse() {
+    JMutexAutoLock envlock(m_env_mutex);
+
+    SharedBuffer<u8> data(2);
+    writeU16(&data[0], TOSERVER_COLLAPSE);
     // Send as unreliable
     Send(0, data, false);
 }

@@ -74,7 +74,7 @@ public:
         assert(m_mutex.IsInitialized());
     }
 
-    ~MapSector() {
+    virtual ~MapSector() {
         //TODO: clear m_blocks
         core::map<s16, MapBlock*>::Iterator i = m_blocks.getIterator();
         for (; i.atEnd() == false; i++) {
