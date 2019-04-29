@@ -296,6 +296,7 @@ void Client::ProcessData(u8 *data, u32 datasize, u16 peer_id) {
                 u16 oldgear = player->gear;
                 u16 newskin = readU16(&data[start + 2 + 12 + 12 + 12]);
                 u16 newgear = readU16(&data[start + 2 + 12 + 12 + 12 + 2]);
+
                 if (oldskin != newskin || oldgear != newgear) {
                     if (newskin == 99) {
                         // load NPC skin
