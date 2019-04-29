@@ -297,7 +297,12 @@ void Client::ProcessData(u8 *data, u32 datasize, u16 peer_id) {
                 u16 newskin = readU16(&data[start + 2 + 12 + 12 + 12]);
                 u16 newgear = readU16(&data[start + 2 + 12 + 12 + 12 + 2]);
                 if (oldskin != newskin || oldgear != newgear) {
-                    player->updateMesh(m_smgr, newskin, newgear);
+                    if (newskin == 99) {
+                        // load NPC skin
+                        player->showNPC(m_smgr, newskin, newgear);
+                    } else {
+                        player->updateMesh(m_smgr, newskin, newgear);
+                    }
                 }
 
 //                if (!player->isLocal()) {

@@ -98,7 +98,29 @@ void Player::updateMesh(scene::ISceneManager* mgr, u16 skin, u16 gear) {
 
     // init animation
     this->animateStand();
+}
 
+void Player::showNPC(scene::ISceneManager* mgr, u16 skin, u16 gear) {
+    // update state
+    this->skin = skin;
+    this->gear = gear;
+
+    string mesh_path = "../data/npc1.b3d";
+    string skin_path = "../data/npc1.png";
+
+    video::IVideoDriver* driver = mgr->getVideoDriver();
+    avatar = mgr->getMesh(mesh_path.c_str());
+    avatar_node->remove();
+    avatar_node = mgr->addAnimatedMeshSceneNode(avatar, this);
+    avatar_node->setMaterialFlag(video::EMF_LIGHTING, false);
+    avatar_node->setMaterialTexture(0, driver->getTexture(skin_path.c_str()));
+    avatar_node->setScale(v3f(1, 1, 1));
+
+//    updateSceneNodePosition();
+//    updateSceneNodeRotation();
+
+    // init animation
+    this->animateStand();
 }
 
 void Player::move(f32 dtime, Map &map) {

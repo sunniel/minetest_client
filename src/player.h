@@ -104,6 +104,8 @@ public:
 
     void updateMesh(scene::ISceneManager* mgr, u16 skin, u16 gear);
 
+    void showNPC(scene::ISceneManager* mgr, u16 skin, u16 gear);
+
     bool isLocal() {
         return m_is_local;
     }
