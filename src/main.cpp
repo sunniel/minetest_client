@@ -203,9 +203,11 @@ public:
                 }
             }
             if ((event.KeyInput.Key == KEY_KEY_Q && isPaused)) {
+                std::cout << "To resume the client ..." << std::endl;
                 isPaused = false;
             }
             if ((event.KeyInput.Key == KEY_KEY_X && isPaused)) {
+                std::cout << "To collapse the client ..." << std::endl;
                 toCollapse = true;
             }
         }
@@ -626,7 +628,7 @@ int main() {
                 // wait 10 seconds
 //                sleep_ms(5000);
                 break;
-            } else if (receiver.toCollapsed) {
+            } else if (receiver.toCollapse) {
                 client.collapse();
                 // wait 10 seconds
 //                sleep_ms(5000);
