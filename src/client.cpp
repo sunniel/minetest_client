@@ -616,9 +616,14 @@ core::list<Player*> Client::getPlayers() {
 
 // TODO
 
-void Client::highlightNode(v3s16 p) {
-//    JMutexAutoLock envlock(m_env_mutex);
-    MapNode n(Material::MATERIAL_HIGHLIGHT);
+void Client::highlightNode(v3s16 p, u16 material) {
+    JMutexAutoLock envlock(m_env_mutex);
+    u16 new_material = material + MATERIAL_HIGHLIGHT_SHIFT
+    ;
+    cout << endl;
+    cout << "new_material: " << new_material << endl;
+    cout << endl;
+    MapNode n(new_material);
     m_env.getMap().setNode(p, n);
     MapBlock* block = m_env.getMap().getNodeBlock(p);
     if (block != NULL) {
@@ -626,17 +631,16 @@ void Client::highlightNode(v3s16 p) {
     } else {
         cout << "block not found!" << endl;
     }
-    m_env.getMap().updateChangedVisibleArea();
 }
 
 void Client::restoreNode(v3s16 p, MapNode n) {
-//    JMutexAutoLock envlock(m_env_mutex);
+    JMutexAutoLock envlock(m_env_mutex);
     m_env.getMap().setNode(p, n);
+    m_env.getMap().nodeAddedUpdate(p, n.light);
     MapBlock* block = m_env.getMap().getNodeBlock(p);
     if (block != NULL) {
         block->setChangedFlag();
     } else {
         cout << "block not found!" << endl;
     }
-    m_env.getMap().updateChangedVisibleArea();
 }

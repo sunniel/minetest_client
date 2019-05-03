@@ -207,9 +207,9 @@ public:
         v3s16 relpos = p - blockpos * MAP_BLOCKSIZE;
         blockref->setNode(relpos, n);
         //=====For node storage=====
-        if (n.d < MATERIAL_AIR)
-            m_nodes.insert(p, s16(n.d));
-        else {
+        if (n.d < MATERIAL_AIR) {
+            m_nodes.set(p, s16(n.d));
+        } else {
             // Don't save air node
             core::map<v3s16, s16>::Node *n = m_nodes.find(p);
             if (n != NULL) {

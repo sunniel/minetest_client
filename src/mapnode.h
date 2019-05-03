@@ -1,6 +1,6 @@
 /*
-(c) 2010 Perttu Ahola <celeron55@gmail.com>
-*/
+ (c) 2010 Perttu Ahola <celeron55@gmail.com>
+ */
 
 #ifndef MAPNODE_HEADER
 #define MAPNODE_HEADER
@@ -22,83 +22,77 @@
 #define MATERIAL_AIR 254
 
 // TODO
-#define USEFUL_MATERIAL_COUNT 5
+#define USEFUL_MATERIAL_COUNT 3
 
-enum Material
-{
-	MATERIAL_STONE=0,
-	MATERIAL_GRASS,
-	/*
-		For water, the param is water pressure. 0...127.
+#define MATERIAL_HIGHLIGHT_SHIFT 10;
 
-		- Water blocks will fall down if there is empty space below.
-		- If there is water below, the pressure of the block below is
-		  the pressure of the current block + 1, or higher.
-		- If there is any pressure in a horizontally neighboring
-		  block, a water block will try to move away from it.
-		- If there is >=2 of pressure in a block below, water will
-		  try to move upwards.
+enum Material {
+    MATERIAL_STONE = 0,
+    MATERIAL_GRASS,
+    /*
+     For water, the param is water pressure. 0...127.
 
-		TODO: Before implementing water, do a server-client framework.
-	*/
-	MATERIAL_WATER,
-	MATERIAL_HIGHLIGHT,
-	MATERIAL_TORCH,
+     - Water blocks will fall down if there is empty space below.
+     - If there is water below, the pressure of the block below is
+     the pressure of the current block + 1, or higher.
+     - If there is any pressure in a horizontally neighboring
+     block, a water block will try to move away from it.
+     - If there is >=2 of pressure in a block below, water will
+     try to move upwards.
+
+     TODO: Before implementing water, do a server-client framework.
+     */
+    MATERIAL_WATER,
+    MATERIAL_STONE_H = 10,
+    MATERIAL_GRASS_H,
+    MATERIAL_WATER_H,
+    MATERIAL_TORCH,
 };
 
-struct MapNode
-{
-	//TODO: block type to differ from material (e.g. grass edges)
-	u8 d; // block type
-	light_t light;
-	s8 param; // Initialized to 0
+struct MapNode {
+    //TODO: block type to differ from material (e.g. grass edges)
+    u8 d; // block type
+    light_t light;
+    s8 param; // Initialized to 0
 
-	MapNode(const MapNode & n)
-	{
-		*this = n;
-	}
-	
-	MapNode(u8 data=MATERIAL_AIR, light_t a_light=LIGHT_MIN, u8 a_param=0)
-	//MapNode(u8 data=MATERIAL_AIR, light_t a_light=LIGHT_MAX, u8 a_param=0)
-	{
-		d = data;
-		light = a_light;
-		param = a_param;
-	}
+    MapNode(const MapNode & n) {
+        *this = n;
+    }
 
-	/*
-		If true, the node allows light propagation
-	*/
-	bool transparent()
-	{
-		return (d == MATERIAL_AIR || d == MATERIAL_TORCH);
-	}
+    MapNode(u8 data = MATERIAL_AIR, light_t a_light = LIGHT_MIN, u8 a_param = 0)
+    //MapNode(u8 data=MATERIAL_AIR, light_t a_light=LIGHT_MAX, u8 a_param=0)
+            {
+        d = data;
+        light = a_light;
+        param = a_param;
+    }
 
-	light_t light_source()
-	{
-		if(d == MATERIAL_TORCH)
-			return 0.9;
-		
-		return 0.0;
-	}
+    /*
+     If true, the node allows light propagation
+     */
+    bool transparent() {
+        return (d == MATERIAL_AIR || d == MATERIAL_TORCH);
+    }
 
-	static u32 serializedLength()
-	{
-		return 2;
-	}
-	void serialize(u8 *dest)
-	{
-		dest[0] = d;
-		dest[1] = param;
-	}
-	void deSerialize(u8 *source)
-	{
-		d = source[0];
-		param = source[1];
-	}
+    light_t light_source() {
+        if (d == MATERIAL_TORCH)
+            return 0.9;
+
+        return 0.0;
+    }
+
+    static u32 serializedLength() {
+        return 2;
+    }
+    void serialize(u8 *dest) {
+        dest[0] = d;
+        dest[1] = param;
+    }
+    void deSerialize(u8 *source) {
+        d = source[0];
+        param = source[1];
+    }
 };
-
-
 
 #endif
 

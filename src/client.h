@@ -132,7 +132,7 @@ public:
     core::list<Player*> getPlayers();
 
     // TODO
-    void highlightNode(v3s16 p);
+    void highlightNode(v3s16 p, u16 material);
     void restoreNode(v3s16 p, MapNode n);
 
 private:

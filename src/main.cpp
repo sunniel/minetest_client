@@ -93,8 +93,7 @@ using namespace jthread;
 #include "clientserver.h"
 #include "properties.h"
 
-const char *g_material_filenames[MATERIALS_COUNT] = { "../data/stone.png",
-        "../data/grass.png", "../data/water.png", "../data/highlight.png" };
+const char *g_material_filenames[MATERIALS_COUNT];
 
 #define FPS_MIN 15
 #define FPS_MAX 25
@@ -139,8 +138,6 @@ std::ostream dout_client(dfile.rdbuf());
 
 std::ostream dout_map(dfile.rdbuf());
 
-Player *player;
-
 class MyEventReceiver: public IEventReceiver {
 public:
     // This is the one method that we have to implement
@@ -182,19 +179,17 @@ public:
                 if ((event.KeyInput.PressedDown) && (!walking)) //this will be done once
                         {
                     walking = true;
-//                    player->animateMove();
                 } else if ((!event.KeyInput.PressedDown) && (walking)) //this will be done on key up
                         {
                     walking = false;
-//                    player->animateStand();
                 }
             }
             // currently disable the node add/remove function
-//            if ((event.KeyInput.Key == KEY_LCONTROL
-//                    || event.KeyInput.Key == KEY_RCONTROL)
-//                    && event.KeyInput.PressedDown) {
-//                ctrl = !ctrl;
-//            }
+            if ((event.KeyInput.Key == KEY_LCONTROL
+                    || event.KeyInput.Key == KEY_RCONTROL)
+                    && event.KeyInput.PressedDown) {
+                ctrl = !ctrl;
+            }
             if ((event.KeyInput.Key == KEY_ESCAPE && event.KeyInput.PressedDown)) {
                 if (!isPaused) {
                     isPaused = true;
@@ -257,8 +252,6 @@ public:
 private:
     // We use this array to store the current state of each key
     bool keyIsDown[KEY_KEY_CODES_COUNT];
-    //s32 mouseX;
-    //s32 mouseY;
 };
 
 con::Connection login_con(PROTOCOL_ID, 512);
@@ -363,7 +356,18 @@ bool login(const char* connect_name, unsigned short port,
     return result;
 }
 
+void initMaterials() {
+    g_material_filenames[Material::MATERIAL_STONE] = "../data/stone.png";
+    g_material_filenames[Material::MATERIAL_GRASS] = "../data/grass.png";
+    g_material_filenames[Material::MATERIAL_WATER] = "../data/water.png";
+    g_material_filenames[Material::MATERIAL_STONE_H] = "../data/stone_t.png";
+    g_material_filenames[Material::MATERIAL_GRASS_H] = "../data/grass_t.png";
+    g_material_filenames[Material::MATERIAL_WATER_H] = "../data/water_t.png";
+}
+
 int main() {
+    initMaterials();
+
     sockets_init();
     atexit(sockets_cleanup);
 
@@ -504,6 +508,10 @@ int main() {
     for (u16 i = 0; i < MATERIALS_COUNT; i++) {
         materials[i].Lighting = false;
         materials[i].BackfaceCulling = false;
+        if (i >= 10) {
+            materials[i].MaterialType =
+                    video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
+        }
 
         const char *filename = g_material_filenames[i];
         if (filename != NULL) {
@@ -525,12 +533,6 @@ int main() {
     {
         std::cout << "Creating server and client" << std::endl;
 
-//        Server *server = NULL;
-//        if (hosting) {
-//            server = new Server();
-//            server->start(port);
-//        }
-
         Client client(smgr, materials, playerId);
         Address connect_address(0, 0, 0, 0, port);
         try {
@@ -541,7 +543,7 @@ int main() {
         }
         client.connect(connect_address);
 
-//        Player *player = client.getLocalPlayer();
+        Player *player = client.getLocalPlayer();
         player = client.getLocalPlayer();
         // Initialize player state. Otherwise, the state will be unknown
         player->animateStand();
@@ -666,9 +668,6 @@ int main() {
                 else
                     dtime = 0;
                 lasttime = time;
-
-                // Collected during the loop and displayed
-                core::list<core::aabbox3d<f32> > hilightboxes;
 
                 /*
                  Special keys
@@ -839,12 +838,6 @@ int main() {
                  by drawing a line between the player and the point d*BS units
                  distant from the player along with the camera direction
                  */
-                // TODO
-                for (map<v3s16, MapNode>::iterator it = selected.begin();
-                        it != selected.end(); it++) {
-                    client.restoreNode(it->first, it->second);
-                }
-                selected.clear();
 
                 if (!receiver.walking && receiver.ctrl) {
 
@@ -960,13 +953,19 @@ int main() {
                         }
 
                         // for highlighting the found surface of the block
-                        // TODO
-//                hilightboxes.push_back(nodefacebox);
-                        selected[nodepos] = client.getNode(nodepos);
-                        client.highlightNode(nodepos);
+                        if (selected.count(nodepos) == 0) {
+                            selected[nodepos] = client.getNode(nodepos);
+                            client.highlightNode(nodepos, selected[nodepos].d);
+                        }
+                        for (map<v3s16, MapNode>::iterator it =
+                                selected.begin(); it != selected.end(); it++) {
+                            if (it->first != nodepos) {
+                                client.restoreNode(it->first, it->second);
+                                selected.erase(it->first);
+                            }
+                        }
 
-                        if (receiver.leftclicked) {
-                            // TODO
+                        if (receiver.leftclicked && nodepos.Y > 0) {
                             selected.erase(nodepos);
 
                             std::cout << "Removing block (MapNode)"
@@ -981,7 +980,6 @@ int main() {
                             std::cout << "Took " << dtime << "ms" << std::endl;
                         }
                         if (receiver.rightclicked) {
-                            // TODO
                             client.restoreNode(nodepos, selected[nodepos]);
                             selected.erase(nodepos);
 
@@ -1004,6 +1002,18 @@ int main() {
                     } else {
                         //std::cout<<"nodefound == false"<<std::endl;
                         //positiontextgui->setText(L"");
+
+                        for (map<v3s16, MapNode>::iterator it =
+                                selected.begin(); it != selected.end(); it++) {
+                            client.restoreNode(it->first, it->second);
+                            selected.erase(it->first);
+                        }
+                    }
+                } else {
+                    for (map<v3s16, MapNode>::iterator it = selected.begin();
+                            it != selected.end(); it++) {
+                        client.restoreNode(it->first, it->second);
+                        selected.erase(it->first);
                     }
                 }
 
@@ -1097,19 +1107,6 @@ int main() {
                 driver->draw2DLine(displaycenter - core::vector2d<s32>(0, 10),
                         displaycenter + core::vector2d<s32>(0, 10),
                         video::SColor(255, 255, 255, 255));
-
-                /*
-                 * draw a box for the highlighted face
-                 * currently, there is only one box, since the hilightboxes is always re-initialized in each loop
-                 */
-                video::SMaterial m;
-                m.Thickness = 10;
-                m.Lighting = false;
-                driver->setMaterial(m);
-                for (core::list<core::aabbox3d<f32> >::Iterator i =
-                        hilightboxes.begin(); i != hilightboxes.end(); i++) {
-                    driver->draw3DBox(*i, video::SColor(255, 0, 0, 0));
-                }
 
                 guienv->drawAll();
 
